@@ -11,62 +11,43 @@ import {
 } from '@mui/material';
 import { red } from '@mui/material/colors';
 import BN from 'bignumber.js';
-import { FC, memo, useCallback, useMemo, useRef } from 'react';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { FC, memo } from 'react';
 import styled from 'styled-components';
+
+import { useCurrentPrice, useOrderBook } from '../hooks';
 
 const MuiTableCell = styled(TableCell)`
   border: none;
 `;
 
 const OrderBook: FC = memo(() => {
-  const socketUrl = 'wss://stream.binance.com:9443/stream';
-
-  const { lastJsonMessage, readyState, sendJsonMessage } =
-    useWebSocket(socketUrl);
-
-  const messageHistory = useRef<MessageEvent[]>([]);
-
-  messageHistory.current = useMemo(() => {
-    if (lastJsonMessage && lastJsonMessage.data) {
-      messageHistory.current = messageHistory.current
-        .concat(lastJsonMessage ?? [])
-        .slice(-5);
-    }
-
-    return messageHistory.current;
-  }, [lastJsonMessage]);
-
-  const handleClickSendMessage = useCallback(() => {
-    sendJsonMessage({
-      id: 1,
-      method: 'SUBSCRIBE',
-      params: ['btcusdt@bookTicker'],
-    });
-  }, [sendJsonMessage]);
-
-  const handleClickUnSendMessage = useCallback(() => {
-    sendJsonMessage({
-      id: 1,
-      method: 'UNSUBSCRIBE',
-      params: ['btcusdt@bookTicker'],
-    });
-  }, [sendJsonMessage]);
+  const { history, ready, subscribe, unSubscribe } = useOrderBook('btcusdt');
+  const {
+    price,
+    subscribe: subscribePrice,
+    unSubscribe: unSubscribePrice,
+  } = useCurrentPrice('btcusdt');
 
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 3 }}>
         <Button
-          disabled={readyState !== ReadyState.OPEN}
+          disabled={!ready}
           variant="contained"
-          onClick={handleClickSendMessage}
+          onClick={() => {
+            subscribePrice();
+            subscribe();
+          }}
         >
           Subscribe
         </Button>
         <Button
-          disabled={readyState !== ReadyState.OPEN}
+          disabled={!ready}
           variant="outlined"
-          onClick={handleClickUnSendMessage}
+          onClick={() => {
+            unSubscribe();
+            unSubscribePrice();
+          }}
         >
           Unsubscribe
         </Button>
@@ -82,26 +63,31 @@ const OrderBook: FC = memo(() => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {messageHistory.current.map((message, index) => {
+            {history.current.map((tick, index) => {
               return (
                 <TableRow key={index}>
                   <MuiTableCell align="left" sx={{ color: red[900] }}>
-                    {message.data.a}
+                    {tick.data.a}
                   </MuiTableCell>
-                  <MuiTableCell align="right">{message.data.A}</MuiTableCell>
+                  <MuiTableCell align="right">{tick.data.A}</MuiTableCell>
                   <MuiTableCell align="right">
-                    {new BN(message.data.a).times(message.data.A).toString()}
+                    {new BN(tick.data.a).times(tick.data.A).toString()}
                   </MuiTableCell>
                 </TableRow>
               );
             })}
-            {messageHistory.current.map((message, index) => {
+            <TableRow>
+              <MuiTableCell align="left" sx={{ fontWeight: 'bold', py: 2 }}>
+                {price} USDT
+              </MuiTableCell>
+            </TableRow>
+            {history.current.map((tick, index) => {
               return (
-                <TableRow key={index}>
-                  <MuiTableCell align="left">{message.data.b}</MuiTableCell>
-                  <MuiTableCell align="right">{message.data.B}</MuiTableCell>
+                <TableRow key={`bid-${index}`}>
+                  <MuiTableCell align="left">{tick.data.b}</MuiTableCell>
+                  <MuiTableCell align="right">{tick.data.B}</MuiTableCell>
                   <MuiTableCell align="right">
-                    {new BN(message.data.b).times(message.data.B).toString()}
+                    {new BN(tick.data.b).times(tick.data.B).toString()}
                   </MuiTableCell>
                 </TableRow>
               );
