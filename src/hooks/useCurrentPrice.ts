@@ -3,7 +3,10 @@ import { useMemo, useRef } from 'react';
 import { useBinance } from './';
 
 export const useCurrentPrice = (symbol: string) => {
-  const { payload, subscribe, unSubscribe } = useBinance(symbol, 'miniTicker');
+  const { payload, ready, subscribe, unSubscribe } = useBinance(
+    symbol,
+    'miniTicker'
+  );
 
   const priceRef = useRef<string>('-');
 
@@ -15,5 +18,5 @@ export const useCurrentPrice = (symbol: string) => {
     return priceRef.current;
   }, [payload]);
 
-  return { price: priceRef.current, subscribe, unSubscribe };
+  return { price: priceRef.current, ready, subscribe, unSubscribe };
 };
