@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.4.1",
+    "@emotion/styled": "^11.3.0",
+    "@mui/material": "^5.0.3",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -13,6 +16,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "styled-components": "^5.3.1",
     "typescript": "^4.1.2",
     "web-vitals": "^1.0.1"
   },
@@ -28,6 +32,16 @@
       "react-app/jest"
     ]
   },
+  "prettier": {
+    "singleQuote": true,
+    "semi": true
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint src --ext .tsx,.ts --fix",
+      "prettier --write"
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -39,5 +53,17 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "resolutions": {
+    "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-react": "^7.26.1",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint-plugin-sort-destructure-keys": "^1.3.5",
+    "eslint-plugin-sort-keys-fix": "^1.1.2",
+    "lint-staged": "^11.2.3",
+    "prettier": "^2.4.1"
   }
 }
